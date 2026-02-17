@@ -1,93 +1,112 @@
-import { getDB } from "./db";
-import { Product } from "../types";
+import { supabase } from './supabase';
+import { Product } from '../types';
 
-// Helper to map DB snake_case to TS camelCase
+// ── Helper: map DB snake_case → TS camelCase ────────────────
 const mapProduct = (row: any): Product => ({
   id: row.id,
   name: row.name,
   price: parseFloat(row.price),
   category: row.category,
   description: row.description,
-  images: row.images,
-  sizes: row.sizes,
-  colors: row.colors,
+  images: row.images ?? [],
+  sizes: row.sizes ?? [],
+  colors: row.colors ?? [],
   isNew: row.is_new,
   rating: parseFloat(row.rating),
-  reviewCount: row.review_count
+  reviewCount: row.review_count,
 });
 
 export const api = {
+  // ── PRODUCTS ───────────────────────────────────────────────
   getProducts: async (category?: string, sort?: string): Promise<Product[]> => {
-    const db = await getDB();
-    let query = "SELECT * FROM products";
-    const params: any[] = [];
+    let query = supabase.from('products').select('*');
 
     if (category && category !== 'All') {
-      query += " WHERE category = $1";
-      params.push(category);
+      query = query.eq('category', category);
     }
 
     if (sort === 'Price: Low to High') {
-      query += " ORDER BY price ASC";
+      query = query.order('price', { ascending: true });
     } else if (sort === 'Price: High to Low') {
-      query += " ORDER BY price DESC";
+      query = query.order('price', { ascending: false });
     } else {
-       // Default Sort
-       query += " ORDER BY id ASC";
+      query = query.order('id', { ascending: true });
     }
 
-    const result = await db.query(query, params);
-    return result.rows.map(mapProduct);
+    const { data, error } = await query;
+    if (error) throw new Error(error.message);
+    return (data ?? []).map(mapProduct);
   },
 
   getProductById: async (id: string): Promise<Product | undefined> => {
-    const db = await getDB();
-    const result = await db.query("SELECT * FROM products WHERE id = $1", [id]);
-    if (result.rows.length === 0) return undefined;
-    return mapProduct(result.rows[0]);
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) return undefined;
+    return mapProduct(data);
   },
 
+  // ── ORDERS ─────────────────────────────────────────────────
   createOrder: async (orderData: {
     customerName: string;
     customerEmail: string;
     totalAmount: number;
     items: any[];
+    shippingAddress?: object;
   }) => {
-    const db = await getDB();
+    const { data: { user } } = await supabase.auth.getUser();
     const orderId = 'ORD-' + Math.random().toString(36).substr(2, 9).toUpperCase();
 
-    try {
-      // Start Transaction
-      await db.query('BEGIN');
+    const { error: orderError } = await supabase.from('orders').insert({
+      id: orderId,
+      user_id: user?.id ?? null,
+      customer_name: orderData.customerName,
+      customer_email: orderData.customerEmail,
+      total_amount: orderData.totalAmount,
+      status: 'confirmed',
+      shipping_address: orderData.shippingAddress ?? null,
+    });
 
-      // Insert Order
-      await db.query(
-        `INSERT INTO orders (id, customer_name, customer_email, total_amount, status)
-         VALUES ($1, $2, $3, $4, 'confirmed')`,
-        [orderId, orderData.customerName, 'customer@example.com', orderData.totalAmount]
-      );
+    if (orderError) throw new Error(orderError.message);
 
-      // Insert Items
-      for (const item of orderData.items) {
-        await db.query(
-          `INSERT INTO order_items (order_id, product_id, quantity, selected_size, selected_color, price_at_purchase)
-           VALUES ($1, $2, $3, $4, $5, $6)`,
-          [orderId, item.id, item.quantity, item.selectedSize, item.selectedColor, item.price]
-        );
-      }
+    const orderItems = orderData.items.map(item => ({
+      order_id: orderId,
+      product_id: item.id,
+      quantity: item.quantity,
+      selected_size: item.selectedSize,
+      selected_color: item.selectedColor,
+      price_at_purchase: item.price,
+    }));
 
-      await db.query('COMMIT');
-      return { success: true, orderId };
-    } catch (e) {
-      await db.query('ROLLBACK');
-      console.error("Order failed", e);
-      throw e;
-    }
+    const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
+    if (itemsError) throw new Error(itemsError.message);
+
+    await api.logEvent('purchase', undefined, { order_id: orderId, total: orderData.totalAmount });
+
+    return { success: true, orderId };
   },
-  
-  // Newsletter subscription (Simulated for now as we don't have a newsletter table)
+
+  // ── NEWSLETTER ─────────────────────────────────────────────
   subscribeNewsletter: async (email: string) => {
-      // We could add a subscribers table here easily with SQL
-      return new Promise<{ success: true }>(resolve => setTimeout(() => resolve({ success: true }), 500));
-  }
+    await api.logEvent('newsletter_signup', undefined, { email });
+    return { success: true };
+  },
+
+  // ── ANALYTICS ──────────────────────────────────────────────
+  logEvent: async (
+    eventType: 'page_view' | 'product_view' | 'add_to_cart' | 'purchase' | 'newsletter_signup',
+    productId?: string,
+    metadata?: object
+  ) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    await supabase.from('analytics_events').insert({
+      user_id: user?.id ?? null,
+      event_type: eventType,
+      product_id: productId ?? null,
+      metadata: metadata ?? null,
+    });
+  },
 };
