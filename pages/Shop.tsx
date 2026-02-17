@@ -95,9 +95,9 @@ const Shop: React.FC = () => {
              <div>
                 <p className="text-xs font-bold uppercase tracking-wider text-brand-400 mb-2">Price Range</p>
                 <div className="flex items-center gap-2 text-sm text-brand-600">
-                   <span>$0</span>
+                   <span>₹0</span>
                    <div className="h-1 flex-1 bg-brand-200 rounded-full"></div>
-                   <span>$200</span>
+                   <span>₹200</span>
                 </div>
              </div>
           </div>

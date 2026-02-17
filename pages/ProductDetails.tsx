@@ -87,7 +87,7 @@ const ProductDetails: React.FC = () => {
               <span className="text-sm text-brand-500 underline">{product.reviewCount} Reviews</span>
             </div>
 
-            <p className="text-2xl font-medium text-brand-900 mb-8">${product.price.toFixed(2)}</p>
+            <p className="text-2xl font-medium text-brand-900 mb-8">₹{product.price.toFixed(2)}</p>
             
             <p className="text-brand-600 leading-relaxed mb-8">
               {product.description}
@@ -144,7 +144,7 @@ const ProductDetails: React.FC = () => {
             <div className="grid grid-cols-1 gap-4 pt-8 border-t border-brand-100">
                <div className="flex items-center gap-4">
                   <Truck className="text-brand-500" size={20}/>
-                  <div className="text-sm text-brand-600">Free shipping on all orders over $100</div>
+                  <div className="text-sm text-brand-600">Free shipping on all orders over ₹100</div>
                </div>
                <div className="flex items-center gap-4">
                   <Shield className="text-brand-500" size={20}/>

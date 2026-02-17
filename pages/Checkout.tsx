@@ -183,15 +183,15 @@ const Checkout: React.FC = () => {
                   <div className="space-y-2 text-sm text-brand-600 border-b border-brand-100 pb-4 mb-4">
                      <div className="flex justify-between">
                         <span>Items Total</span>
-                        <span>${cartTotal.toFixed(2)}</span>
+                        <span>₹{cartTotal.toFixed(2)}</span>
                      </div>
                      <div className="flex justify-between">
                         <span>Shipping</span>
-                        <span>{cartTotal > 100 ? 'Free' : '$10.00'}</span>
+                        <span>{cartTotal > 100 ? 'Free' : '₹10.00'}</span>
                      </div>
                      <div className="flex justify-between">
                         <span>Tax</span>
-                        <span>${(cartTotal * 0.08).toFixed(2)}</span>
+                        <span>₹{(cartTotal * 0.08).toFixed(2)}</span>
                      </div>
                   </div>
                   <div className="flex justify-between font-bold text-xl text-brand-900">

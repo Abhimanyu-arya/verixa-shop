@@ -45,7 +45,7 @@ const Cart: React.FC = () => {
                             <span>Color: <span className="font-bold">{item.selectedColor}</span></span>
                           </div>
                         </div>
-                        <p className="font-medium text-lg">${(item.price * item.quantity).toFixed(2)}</p>
+                        <p className="font-medium text-lg">₹{(item.price * item.quantity).toFixed(2)}</p>
                       </div>
                       
                       <div className="flex justify-between items-center mt-4">
@@ -86,22 +86,22 @@ const Cart: React.FC = () => {
               <div className="space-y-4 mb-6 text-sm text-brand-600">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>${cartTotal.toFixed(2)}</span>
+                  <span>₹{cartTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping Estimate</span>
-                  <span>{cartTotal > 100 ? 'Free' : '$10.00'}</span>
+                  <span>{cartTotal > 100 ? 'Free' : '₹10.00'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax Estimate</span>
-                  <span>${(cartTotal * 0.08).toFixed(2)}</span>
+                  <span>₹{(cartTotal * 0.08).toFixed(2)}</span>
                 </div>
               </div>
 
               <div className="border-t border-brand-100 pt-4 mb-8">
                 <div className="flex justify-between font-bold text-lg text-brand-900">
                   <span>Total</span>
-                  <span>${(cartTotal + (cartTotal > 100 ? 0 : 10) + (cartTotal * 0.08)).toFixed(2)}</span>
+                  <span>₹{(cartTotal + (cartTotal > 100 ? 0 : 10) + (cartTotal * 0.08)).toFixed(2)}</span>
                 </div>
               </div>
 

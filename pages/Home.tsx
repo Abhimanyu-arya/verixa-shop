@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight, ShieldCheck, Feather, Leaf, MoreHorizontal, MessageSquare, Paperclip, Send } from 'lucide-react';
+import { ArrowUpRight, ShieldCheck, Feather, Leaf, MoreHorizontal, MessageSquare } from 'lucide-react';
 import { TESTIMONIALS } from '../data';
 import { Testimonial } from '../types';
 
@@ -13,7 +13,7 @@ const Home: React.FC = () => {
         <div className="absolute inset-0 z-0">
           {/* Using a high quality placeholder that matches the aesthetic */}
           <img 
-            src="https://picsum.photos/seed/fashion-hero/1920/1080" 
+            src="https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=1920&h=1080&fit=crop" 
             alt="Model wearing premium t-shirt" 
             className="w-full h-full object-cover opacity-90"
           />
@@ -130,7 +130,6 @@ const Home: React.FC = () => {
                      <h3 className="text-xl font-bold text-gray-800">Feedback <span className="text-gray-400 text-sm font-normal">2204 feedbacks</span></h3>
                   </div>
                   <div className="flex gap-2">
-                     <span className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-600 font-medium cursor-pointer hover:bg-gray-200">Filter Feedback</span>
                   </div>
                </div>
 
@@ -164,14 +163,6 @@ const Home: React.FC = () => {
                            {testimonial.content}
                         </p>
                         
-                        {/* Fake Dashboard Actions */}
-                        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-50">
-                           <div className="text-xs text-gray-400 italic">Reply Feedback...</div>
-                           <div className="flex gap-3 text-gray-400">
-                              <Paperclip size={16} className="cursor-pointer hover:text-gray-600"/>
-                              <Send size={16} className="cursor-pointer hover:text-green-500"/>
-                           </div>
-                        </div>
                       </div>
                    </div>
                  ))}
@@ -190,7 +181,7 @@ const Home: React.FC = () => {
         <div className="relative z-10 max-w-4xl mx-auto px-4 text-center">
           <h2 className="font-serif text-5xl md:text-6xl mb-8 leading-tight">Ready to Upgrade Your Wardrobe?</h2>
           <p className="text-brand-300 text-xl mb-10 max-w-2xl mx-auto">
-            Experience the difference of premium quality. Free shipping on all orders over $100.
+            Experience the difference of premium quality. Free shipping on all orders over ₹100.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link 

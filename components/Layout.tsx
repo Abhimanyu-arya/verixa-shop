@@ -23,7 +23,7 @@ export const Header: React.FC = () => {
     <header className="sticky top-0 z-50 bg-brand-50/90 backdrop-blur-md border-b border-brand-200">
       {/* Top Banner */}
       <div className="bg-brand-900 text-brand-50 text-xs text-center py-2 tracking-widest uppercase">
-        Free Shipping on Orders Over $100
+        Free Shipping on Orders Over ₹100
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
