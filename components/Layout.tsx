@@ -66,7 +66,7 @@ export const Header: React.FC = () => {
             <button className="text-brand-600 hover:text-brand-900 transition-colors">
               <Search size={20} strokeWidth={1.5} />
             </button>
-            <Link to="/shop" className="text-brand-600 hover:text-brand-900 transition-colors relative hidden sm:block">
+            <Link to="/shop?liked=true" className="text-brand-600 hover:text-brand-900 transition-colors relative hidden sm:block">
               <Heart size={20} strokeWidth={1.5} />
               {wishlist.length > 0 && (
                 <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-400 rounded-full"></span>
