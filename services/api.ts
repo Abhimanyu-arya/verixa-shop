@@ -89,6 +89,26 @@ export const api = {
     return { success: true, orderId };
   },
 
+  // ── GET ORDERS BY EMAIL ────────────────────────────────────
+  getOrdersByEmail: async (email: string) => {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*, order_items(product_id, quantity, price_at_purchase, selected_size, selected_color, products(name))')
+      .eq('customer_email', email)
+      .order('created_at', { ascending: false });
+
+    if (error) throw new Error(error.message);
+
+    return (data ?? []).map((order: any) => ({
+      ...order,
+      items: (order.order_items ?? []).map((item: any) => ({
+        name: item.products?.name ?? 'Product',
+        quantity: item.quantity,
+        price: parseFloat(item.price_at_purchase),
+      })),
+    }));
+  },
+
   // ── NEWSLETTER ─────────────────────────────────────────────
   subscribeNewsletter: async (email: string) => {
     await api.logEvent('newsletter_signup', undefined, { email });

@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, Search, Menu, X, Heart, ChevronDown, Check, Loader2 } from 'lucide-react';
+import { ShoppingBag, Search, Menu, X, Heart, ChevronDown, Check, Loader2, User, LogOut } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
+import { useAuth } from '../context/AuthContext';
 import { mockBackend } from '../services/mockBackend';
+import AuthModal from './AuthModal';
+import OfflineBanner from './OfflineBanner';
 
 export const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { cartCount, wishlist } = useShop();
+  const { user, signOut } = useAuth();
   const location = useLocation();
 
   const navLinks = [
@@ -20,94 +26,151 @@ export const Header: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="sticky top-0 z-50 bg-brand-50/90 backdrop-blur-md border-b border-brand-200">
-      {/* Top Banner */}
-      <div className="bg-brand-900 text-brand-50 text-xs text-center py-2 tracking-widest uppercase">
-        Free Shipping on Orders Over ₹100
-      </div>
+    <>
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+      <OfflineBanner />
+      <header className="sticky top-0 z-50 bg-brand-50/90 backdrop-blur-md border-b border-brand-200">
+        {/* Top Banner */}
+        <div className="bg-brand-900 text-brand-50 text-xs text-center py-2 tracking-widest uppercase">
+          Free Shipping on Orders Over ₹100
+        </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          {/* Logo */}
-          <Link to="/" className="flex-shrink-0 flex items-center">
-            <span className="font-serif text-3xl font-bold tracking-tighter text-brand-900">VÉRIXA</span>
-          </Link>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20">
+            {/* Logo */}
+            <Link to="/" className="flex-shrink-0 flex items-center">
+              <span className="font-serif text-3xl font-bold tracking-tighter text-brand-900">VÉRIXA</span>
+            </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex space-x-8 items-center">
-            {navLinks.map((link) => (
-              <div key={link.name} className="relative group">
+            {/* Desktop Nav */}
+            <nav className="hidden md:flex space-x-8 items-center">
+              {navLinks.map((link) => (
+                <div key={link.name} className="relative group">
+                  <Link
+                    to={link.path}
+                    className={`text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
+                      isActive(link.path) ? 'text-brand-900' : 'text-brand-500 hover:text-brand-900'
+                    }`}
+                  >
+                    {link.name}
+                    {link.hasDropdown && <ChevronDown size={14} />}
+                  </Link>
+                  {/* Simple Dropdown for Shop */}
+                  {link.hasDropdown && (
+                    <div className="absolute left-0 mt-2 w-48 bg-white border border-brand-100 shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left">
+                      <div className="py-2">
+                        <Link to="/shop?cat=Basics" className="block px-4 py-2 text-sm text-brand-600 hover:bg-brand-50">Basics Collection</Link>
+                        <Link to="/shop?cat=Premium" className="block px-4 py-2 text-sm text-brand-600 hover:bg-brand-50">Premium Linen</Link>
+                        <Link to="/shop?cat=Graphic" className="block px-4 py-2 text-sm text-brand-600 hover:bg-brand-50">Graphic Arts</Link>
+                        <Link to="/shop" className="block px-4 py-2 text-sm text-brand-600 hover:bg-brand-50 font-bold">View All</Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </nav>
+
+            {/* Icons */}
+            <div className="flex items-center space-x-5">
+              <button className="text-brand-600 hover:text-brand-900 transition-colors">
+                <Search size={20} strokeWidth={1.5} />
+              </button>
+              <Link to="/wishlist" className="text-brand-600 hover:text-brand-900 transition-colors relative hidden sm:block">
+                <Heart size={20} strokeWidth={1.5} />
+                {wishlist.length > 0 && (
+                  <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-400 rounded-full"></span>
+                )}
+              </Link>
+              <Link to="/cart" className="text-brand-600 hover:text-brand-900 transition-colors relative">
+                <ShoppingBag size={20} strokeWidth={1.5} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-brand-900 text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full">
+                    {cartCount}
+                  </span>
+                )}
+              </Link>
+
+              {/* Auth Button */}
+              {user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setIsUserMenuOpen(p => !p)}
+                    className="hidden sm:flex items-center gap-1.5 text-brand-600 hover:text-brand-900 transition-colors"
+                  >
+                    <div className="w-7 h-7 bg-brand-900 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                      {(user.email ?? 'U')[0].toUpperCase()}
+                    </div>
+                  </button>
+                  {isUserMenuOpen && (
+                    <>
+                      <div className="fixed inset-0 z-30" onClick={() => setIsUserMenuOpen(false)} />
+                      <div className="absolute right-0 mt-2 w-48 bg-white border border-brand-100 shadow-xl rounded-xl z-40 py-2 overflow-hidden">
+                        <p className="px-4 py-2 text-xs text-brand-400 truncate">{user.email}</p>
+                        <div className="border-t border-brand-50 my-1" />
+                        <Link to="/account" onClick={() => setIsUserMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-brand-700 hover:bg-brand-50">
+                          <User size={14} /> My Account
+                        </Link>
+                        <Link to="/orders" onClick={() => setIsUserMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-brand-700 hover:bg-brand-50">
+                          <ShoppingBag size={14} /> Orders
+                        </Link>
+                        <div className="border-t border-brand-50 my-1" />
+                        <button onClick={() => { signOut(); setIsUserMenuOpen(false); }} className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 w-full text-left">
+                          <LogOut size={14} /> Sign Out
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={() => setIsAuthOpen(true)}
+                  className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-brand-900 border border-brand-200 px-4 py-2 rounded-lg hover:bg-brand-100 transition-colors"
+                >
+                  <User size={14} />
+                  Sign In
+                </button>
+              )}
+
+              <button
+                className="md:hidden text-brand-600 focus:outline-none"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden bg-brand-50 border-t border-brand-200 absolute w-full left-0 z-40">
+            <div className="px-4 pt-2 pb-6 space-y-1">
+              {navLinks.map((link) => (
                 <Link
+                  key={link.name}
                   to={link.path}
-                  className={`text-sm font-medium transition-colors duration-200 flex items-center gap-1 ${
-                    isActive(link.path) ? 'text-brand-900' : 'text-brand-500 hover:text-brand-900'
-                  }`}
+                  className="block px-3 py-3 text-base font-medium text-brand-700 hover:text-brand-900 hover:bg-brand-100 rounded-md"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   {link.name}
-                  {link.hasDropdown && <ChevronDown size={14} />}
                 </Link>
-                {/* Simple Dropdown for Shop */}
-                {link.hasDropdown && (
-                  <div className="absolute left-0 mt-2 w-48 bg-white border border-brand-100 shadow-lg rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-left">
-                    <div className="py-2">
-                      <Link to="/shop?cat=Basics" className="block px-4 py-2 text-sm text-brand-600 hover:bg-brand-50">Basics Collection</Link>
-                      <Link to="/shop?cat=Premium" className="block px-4 py-2 text-sm text-brand-600 hover:bg-brand-50">Premium Linen</Link>
-                      <Link to="/shop?cat=Graphic" className="block px-4 py-2 text-sm text-brand-600 hover:bg-brand-50">Graphic Arts</Link>
-                      <Link to="/shop" className="block px-4 py-2 text-sm text-brand-600 hover:bg-brand-50 font-bold">View All</Link>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </nav>
-
-          {/* Icons */}
-          <div className="flex items-center space-x-6">
-            <button className="text-brand-600 hover:text-brand-900 transition-colors">
-              <Search size={20} strokeWidth={1.5} />
-            </button>
-            <Link to="/shop?liked=true" className="text-brand-600 hover:text-brand-900 transition-colors relative hidden sm:block">
-              <Heart size={20} strokeWidth={1.5} />
-              {wishlist.length > 0 && (
-                <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-400 rounded-full"></span>
+              ))}
+              {user ? (
+                <>
+                  <Link to="/account" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 text-base font-medium text-brand-700 hover:bg-brand-100 rounded-md">My Account</Link>
+                  <Link to="/orders" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 text-base font-medium text-brand-700 hover:bg-brand-100 rounded-md">Orders</Link>
+                  <button onClick={() => { signOut(); setIsMenuOpen(false); }} className="block px-3 py-3 text-base font-medium text-red-600 hover:bg-red-50 rounded-md w-full text-left">Sign Out</button>
+                </>
+              ) : (
+                <button onClick={() => { setIsAuthOpen(true); setIsMenuOpen(false); }} className="block w-full text-left px-3 py-3 text-base font-medium text-brand-700 hover:text-brand-900 hover:bg-brand-100 rounded-md">
+                  Sign In / Create Account
+                </button>
               )}
-            </Link>
-            <Link to="/cart" className="text-brand-600 hover:text-brand-900 transition-colors relative">
-              <ShoppingBag size={20} strokeWidth={1.5} />
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-brand-900 text-white text-[10px] font-bold h-4 w-4 flex items-center justify-center rounded-full">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-            <button
-              className="md:hidden text-brand-600 focus:outline-none"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            </div>
           </div>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-brand-50 border-t border-brand-200 absolute w-full left-0 z-40">
-          <div className="px-4 pt-2 pb-6 space-y-1">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                className="block px-3 py-3 text-base font-medium text-brand-700 hover:text-brand-900 hover:bg-brand-100 rounded-md"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {link.name}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-    </header>
+        )}
+      </header>
+    </>
   );
 };
 

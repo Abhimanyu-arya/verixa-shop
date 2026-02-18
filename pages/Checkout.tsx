@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
+import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import { ShieldCheck, CreditCard, Loader2, CheckCircle, ShoppingBag } from 'lucide-react';
 
 const Checkout: React.FC = () => {
   const { cartTotal, cart, clearCart } = useShop();
+  const { user } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState<{ id: string } | null>(null);
   const [formData, setFormData] = useState({
      firstName: '',
      lastName: '',
+     email: user?.email ?? '',
      address: '',
      city: '',
      zip: '',
@@ -37,7 +40,7 @@ const Checkout: React.FC = () => {
        
        const result = await api.createOrder({
          customerName: `${formData.firstName} ${formData.lastName}`,
-         customerEmail: 'guest@example.com', // In a real app this would come from form
+         customerEmail: formData.email,
          totalAmount: (cartTotal * 1.08 + (cartTotal > 100 ? 0 : 10)),
          items: cart
        });
@@ -124,6 +127,10 @@ const Checkout: React.FC = () => {
                      <div className="col-span-1">
                         <label className="block text-xs font-bold text-brand-500 mb-1">Last Name</label>
                         <input required name="lastName" onChange={handleInputChange} type="text" className="w-full border border-brand-200 rounded p-2 focus:ring-1 focus:ring-brand-900 outline-none" />
+                     </div>
+                     <div className="col-span-2">
+                        <label className="block text-xs font-bold text-brand-500 mb-1">Email Address</label>
+                        <input required name="email" onChange={handleInputChange} type="email" value={formData.email} placeholder="you@example.com" className="w-full border border-brand-200 rounded p-2 focus:ring-1 focus:ring-brand-900 outline-none" />
                      </div>
                      <div className="col-span-2">
                         <label className="block text-xs font-bold text-brand-500 mb-1">Address</label>
