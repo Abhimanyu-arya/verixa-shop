@@ -25,7 +25,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             e.preventDefault();
             toggleWishlist(product.id);
           }}
-          className="absolute top-2 right-2 z-10 p-2 rounded-full bg-white/80 backdrop-blur hover:bg-white transition-all opacity-0 group-hover:opacity-100"
+          className={`absolute top-2 right-2 z-10 p-2 rounded-full backdrop-blur hover:bg-white transition-all ${wishlisted ? 'bg-white opacity-100' : 'bg-white/80 opacity-0 group-hover:opacity-100'}`}
         >
           <Heart size={16} className={wishlisted ? "fill-red-400 text-red-400" : "text-gray-600"} />
         </button>

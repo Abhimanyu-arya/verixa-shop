@@ -3,17 +3,17 @@ import { Link } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
-import { ShieldCheck, CreditCard, Loader2, CheckCircle, ShoppingBag } from 'lucide-react';
+import { ShieldCheck, CreditCard, Loader2, CheckCircle, ShoppingBag, Lock, User } from 'lucide-react';
 
 const Checkout: React.FC = () => {
   const { cartTotal, cart, clearCart } = useShop();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState<{ id: string } | null>(null);
   const [formData, setFormData] = useState({
-     firstName: '',
-     lastName: '',
-     email: user?.email ?? '',
+     firstName: profile?.full_name?.split(' ')[0] || '',
+     lastName: profile?.full_name?.split(' ').slice(1).join(' ') || '',
+     email: user?.email || '',
      address: '',
      city: '',
      zip: '',
@@ -40,7 +40,7 @@ const Checkout: React.FC = () => {
        
        const result = await api.createOrder({
          customerName: `${formData.firstName} ${formData.lastName}`,
-         customerEmail: formData.email,
+         customerEmail: formData.email || user?.email || 'guest@example.com',
          totalAmount: (cartTotal * 1.08 + (cartTotal > 100 ? 0 : 10)),
          items: cart
        });
@@ -122,15 +122,19 @@ const Checkout: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4">
                      <div className="col-span-1">
                         <label className="block text-xs font-bold text-brand-500 mb-1">First Name</label>
-                        <input required name="firstName" onChange={handleInputChange} type="text" className="w-full border border-brand-200 rounded p-2 focus:ring-1 focus:ring-brand-900 outline-none" />
+                        <input required name="firstName" value={formData.firstName} onChange={handleInputChange} type="text" className="w-full border border-brand-200 rounded p-2 focus:ring-1 focus:ring-brand-900 outline-none" />
                      </div>
                      <div className="col-span-1">
                         <label className="block text-xs font-bold text-brand-500 mb-1">Last Name</label>
-                        <input required name="lastName" onChange={handleInputChange} type="text" className="w-full border border-brand-200 rounded p-2 focus:ring-1 focus:ring-brand-900 outline-none" />
+                        <input required name="lastName" value={formData.lastName} onChange={handleInputChange} type="text" className="w-full border border-brand-200 rounded p-2 focus:ring-1 focus:ring-brand-900 outline-none" />
                      </div>
                      <div className="col-span-2">
                         <label className="block text-xs font-bold text-brand-500 mb-1">Email Address</label>
-                        <input required name="email" onChange={handleInputChange} type="email" value={formData.email} placeholder="you@example.com" className="w-full border border-brand-200 rounded p-2 focus:ring-1 focus:ring-brand-900 outline-none" />
+                        <div className="relative">
+                          <input required name="email" value={formData.email} onChange={handleInputChange} type="email" className={`w-full border border-brand-200 rounded p-2 focus:ring-1 focus:ring-brand-900 outline-none ${user ? 'bg-brand-50 text-brand-600' : ''}`} placeholder="your@email.com" readOnly={!!user} />
+                          {user && <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-green-600 font-bold flex items-center gap-1"><Lock size={10} /> Verified</span>}
+                        </div>
+                        {!user && <p className="text-xs text-brand-400 mt-1">Order confirmation will be sent to this email.</p>}
                      </div>
                      <div className="col-span-2">
                         <label className="block text-xs font-bold text-brand-500 mb-1">Address</label>

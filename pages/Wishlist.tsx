@@ -1,72 +1,88 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Heart, ShoppingBag, Loader2, X } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
-import { Heart, ShoppingBag, X } from 'lucide-react';
-import { PRODUCTS } from '../data';
+import { api } from '../services/api';
+import { Product } from '../types';
+import ProductCard from '../components/ProductCard';
 
 const Wishlist: React.FC = () => {
-  const { wishlist, toggleWishlist, addToCart } = useShop();
+  const { wishlist, toggleWishlist } = useShop();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const wishlistProducts = PRODUCTS.filter(p => wishlist.includes(p.id));
+  useEffect(() => {
+    const fetchWishlistProducts = async () => {
+      if (wishlist.length === 0) {
+        setProducts([]);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      try {
+        // Fetch all products and filter by wishlist IDs
+        const allProducts = await api.getProducts();
+        setProducts(allProducts.filter(p => wishlist.includes(p.id)));
+      } catch (err: any) {
+        setError('Failed to load wishlist items. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchWishlistProducts();
+  }, [wishlist]);
 
   return (
     <div className="min-h-screen bg-brand-50 py-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="mb-8">
-          <h1 className="font-serif text-3xl font-bold text-brand-900">Wishlist</h1>
-          <p className="text-brand-500 text-sm mt-1">{wishlistProducts.length} saved item{wishlistProducts.length !== 1 ? 's' : ''}</p>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="font-serif text-3xl font-bold text-brand-900">My Wishlist</h1>
+            <p className="text-brand-500 mt-1">{wishlist.length} {wishlist.length === 1 ? 'item' : 'items'} saved</p>
+          </div>
+          {products.length > 0 && (
+            <button
+              onClick={() => wishlist.forEach(id => toggleWishlist(id))}
+              className="text-sm text-brand-500 hover:text-red-600 transition-colors underline"
+            >
+              Clear All
+            </button>
+          )}
         </div>
 
-        {wishlistProducts.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm p-12 text-center">
-            <Heart size={40} className="text-brand-300 mx-auto mb-4" />
-            <h2 className="font-serif text-xl font-bold text-brand-900 mb-2">Your wishlist is empty</h2>
-            <p className="text-brand-500 text-sm mb-6">Browse our collection and save items you love.</p>
-            <Link
-              to="/shop"
-              className="inline-block bg-brand-900 text-white px-8 py-3 rounded-lg text-sm font-bold uppercase tracking-widest hover:bg-black transition-colors"
-            >
-              Browse Shop
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="animate-spin text-brand-400" size={32} />
+          </div>
+        ) : error ? (
+          <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+            <p className="text-red-600">{error}</p>
+          </div>
+        ) : wishlist.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Heart size={28} className="text-red-300" />
+            </div>
+            <h2 className="font-serif text-2xl font-bold text-brand-900 mb-2">Your wishlist is empty</h2>
+            <p className="text-brand-500 mb-6">Save items you love by clicking the heart icon on any product.</p>
+            <Link to="/shop" className="inline-block px-6 py-3 bg-brand-900 text-white rounded-lg font-bold text-sm hover:bg-black transition-colors">
+              Browse Products
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {wishlistProducts.map(product => (
-              <div key={product.id} className="bg-white rounded-2xl shadow-sm overflow-hidden flex">
-                <Link to={`/product/${product.id}`} className="w-28 flex-shrink-0">
-                  <img
-                    src={product.images[0]}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                  />
-                </Link>
-                <div className="flex-1 p-5 flex flex-col justify-between">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-xs text-brand-400 uppercase tracking-wide mb-1">{product.category}</p>
-                      <Link to={`/product/${product.id}`} className="font-bold text-brand-900 text-sm hover:underline">
-                        {product.name}
-                      </Link>
-                      <p className="text-brand-700 font-bold mt-1">₹{product.price.toFixed(2)}</p>
-                    </div>
-                    <button
-                      onClick={() => toggleWishlist(product.id)}
-                      className="text-brand-300 hover:text-red-500 transition-colors p-1"
-                      title="Remove from wishlist"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    <Link
-                      to={`/product/${product.id}`}
-                      className="flex-1 text-center text-xs font-bold uppercase tracking-wide bg-brand-900 text-white py-2 rounded-lg hover:bg-black transition-colors flex items-center justify-center gap-1"
-                    >
-                      <ShoppingBag size={12} />
-                      View & Add
-                    </Link>
-                  </div>
-                </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {products.map(product => (
+              <div key={product.id} className="relative">
+                <ProductCard product={product} />
+                <button
+                  onClick={() => toggleWishlist(product.id)}
+                  title="Remove from wishlist"
+                  className="absolute top-2 right-2 z-20 p-1.5 rounded-full bg-white shadow hover:bg-red-50 transition-colors"
+                >
+                  <X size={14} className="text-red-500" />
+                </button>
               </div>
             ))}
           </div>

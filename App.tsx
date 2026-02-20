@@ -4,6 +4,7 @@ import { ShopProvider } from './context/ShopContext';
 import { AuthProvider } from './context/AuthContext';
 import { Header, Footer } from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
+import { OfflineBanner } from './components/OfflineBanner';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
 import ProductDetails from './pages/ProductDetails';
@@ -12,7 +13,20 @@ import Checkout from './pages/Checkout';
 import Account from './pages/Account';
 import Orders from './pages/Orders';
 import Wishlist from './pages/Wishlist';
+import Admin from './pages/Admin';
 import { About, Contact, FAQ } from './pages/StaticPages';
+
+// Store layout — has header & footer
+const StoreLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="flex flex-col min-h-screen">
+    <Header />
+    <div className="flex-grow">
+      <ErrorBoundary>{children}</ErrorBoundary>
+    </div>
+    <Footer />
+    <OfflineBanner />
+  </div>
+);
 
 const App: React.FC = () => {
   return (
@@ -20,10 +34,13 @@ const App: React.FC = () => {
       <ShopProvider>
         <Router>
           <ErrorBoundary>
-            <div className="flex flex-col min-h-screen">
-              <Header />
-              <div className="flex-grow">
-                <ErrorBoundary>
+            <Routes>
+              {/* Admin — completely standalone, no header/footer */}
+              <Route path="/admin" element={<Admin />} />
+
+              {/* All store routes wrapped in StoreLayout */}
+              <Route path="/*" element={
+                <StoreLayout>
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/shop" element={<Shop />} />
@@ -37,10 +54,9 @@ const App: React.FC = () => {
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/faq" element={<FAQ />} />
                   </Routes>
-                </ErrorBoundary>
-              </div>
-              <Footer />
-            </div>
+                </StoreLayout>
+              } />
+            </Routes>
           </ErrorBoundary>
         </Router>
       </ShopProvider>
