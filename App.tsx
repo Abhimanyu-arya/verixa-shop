@@ -5,7 +5,6 @@ import { AuthProvider } from './context/AuthContext';
 import { Header, Footer } from './components/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 import { OfflineBanner } from './components/OfflineBanner';
-import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
 import ProductDetails from './pages/ProductDetails';
@@ -35,8 +34,6 @@ const App: React.FC = () => {
       <ShopProvider>
         <Router>
           <ErrorBoundary>
-            {/* Scrolls to top on every route change */}
-            <ScrollToTop />
             <Routes>
               {/* Admin — completely standalone, no header/footer */}
               <Route path="/admin" element={<Admin />} />
